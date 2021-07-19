@@ -5,8 +5,6 @@
 #include "montador.h"
 
 int main(int argc, char *argv[]) {
-    
-    //Teste de leitura do arquivo
     FILE *arq;
     switch (argc) {
     case 1:
@@ -24,7 +22,13 @@ int main(int argc, char *argv[]) {
     SymTable *head = NULL;
     head = pass_one(arq, head);
     fclose(arq);
-    print_table(head);
+
+    // Realiza passo 2, traduzindo o código recebido
+    arq = fopen(argv[1], "rt");
+    printf("MV-EXE\n\n");
+    printf("Implementar 4 inteiros\n\n");
+    pass_two(arq,head);
+    fclose(arq);
 
     return 0;
 }
