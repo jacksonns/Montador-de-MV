@@ -186,3 +186,57 @@ SymTable * pass_one(FILE *arq, SymTable *head){
 
     return head;
 }
+
+//Passo 2 - Traduz o programa
+void pass_two(FILE *arq, SymTable *head) {
+    char line[100];
+    char *word;
+    int size, address_or_code;
+
+    while(fgets(line, 100, arq) != NULL) {
+        line[strcspn(line, "\n")] = 0;
+        word = strtok(line, " ");
+        while (word != NULL){
+            if (strncmp(word, ";", 1) == 0) { //Se começo de comentário
+                break; //Ignora o resto da linha
+            } else if (strncmp(word, "\n", 1) != 0) {
+                size = strlen(word);
+                if (strncmp(&word[size-1], ":", 1) != 0) { //Ignora declaração de labels
+                    if (has_symbol(word, head) == 1) { //Label referenciado
+                        address_or_code = get_address(word, head);
+                    } else { //Instruções
+                        address_or_code = retorna_instrucao(word);
+
+                        if ((address_or_code >= 1) && (address_or_code <= 15)) { //Instruções com pelo menos um registrador
+                            printf("%d ", address_or_code);
+                            word = strtok(NULL, " "); //Próxima palavra
+                            printf("%d ", retorna_registrador(word));
+
+                            if ((address_or_code == 5) || ((address_or_code >= 8) && (address_or_code <= 14))) { //Intruções com dois registradores
+                                word = strtok(NULL, " "); //Próxima palavra
+                                printf("%d ", retorna_registrador(word));
+                            } else if ((address_or_code == 1) || (address_or_code == 2)) { //Instruções com resgistrador e memória
+                                word = strtok(NULL, " "); //Próxima palavra
+                                printf("%d ", get_address(word, head));
+                            }
+
+                        } else if ((address_or_code >= 16) && (address_or_code <= 19)) { //Instruções só com memória
+                            printf("%d ", address_or_code);
+                            word = strtok(NULL, " "); //Próxima palavra
+                            printf("%d ", get_address(word, head));
+
+                        } else if (address_or_code == 21) { //Word
+                            word = strtok(NULL, " "); //Próxima palavra
+                            printf("%s ", word);
+                            
+                        } else if ((address_or_code == 22) || (address_or_code == -1)){ //End ou inválido
+                            printf("\b"); //Apaga espaço extra
+                            return;
+                        }
+                    }
+                }
+            }
+            word = strtok(NULL, " "); //Próxima palavra da linha
+        }
+    }
+}
