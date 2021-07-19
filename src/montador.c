@@ -148,7 +148,7 @@ void print_table(SymTable *head){
 SymTable * pass_one(FILE *arq, SymTable *head){
     char line[100];
     char *word;
-    int mem_addr = 1;
+    int mem_addr = 1, size;
     /* 
     Lê linha por linha e a separa em tokens com "strtok()"
     Caso encontre um label ou uma palavra não declarada pela MV,
@@ -158,7 +158,7 @@ SymTable * pass_one(FILE *arq, SymTable *head){
         word = strtok(line, " ");
         if (word != NULL && strncmp(word, ";", 1) != 0 && strncmp(word, "\n", 1) != 0){
             // Se termina com ":", label encontrado.
-            int size = strlen(word);
+            size = strlen(word);
             if (strncmp(&word[size-1], ":", 1) == 0){
                 word[size-1] = '\0';
                 head = add_address(word, mem_addr, head);
@@ -168,12 +168,16 @@ SymTable * pass_one(FILE *arq, SymTable *head){
             //Se leu instrução JUMP, JZ, JN ou CALL
             if (i == 16 || i == 17 || i == 18 || i == 19){
                 word = strtok(NULL, " ");
+                size = strlen(word);
+                if(strncmp(&word[size-1], "\n", 1) == 0) word[size-1] = '\0';
                 head = add_symbol(word, head);
             }
             // Se leu instrução LOAD ou STORE
             else if (i == 1 || i == 2){
                 word = strtok(NULL, " ");
                 word = strtok(NULL, " ");
+                size = strlen(word);
+                if(strncmp(&word[size-1], "\n", 1) == 0) word[size-1] = '\0';
                 head = add_symbol(word, head);
             }
             mem_addr++;
