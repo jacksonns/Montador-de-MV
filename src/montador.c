@@ -57,3 +57,128 @@ int retorna_instrucao(char str[]) { //Retorna o códido das instruções
 int retorna_registrador(char str[]) { //Retorna o código dos registradores de propósito geral
     return str[1] - '0';
 }
+
+// FUNÇÕES CONSTRUTORAS DA TABELA
+// Retorna endereço inteiro de um dado símbolo
+int get_address(char *symbol, SymTable *head){
+    SymTable *aux = head;
+    int addr;
+    while(aux != NULL)
+    {
+        if(strcmp(symbol,aux->symbol) == 0)
+        {
+            addr = aux->mem_addr;
+            break;
+        }
+        aux = aux->next;
+    }
+    return addr;
+}
+
+// Retorna 1 se tem o símbolo e 0 caso contrário
+int has_symbol(char symbol[], SymTable *head){
+    SymTable *aux = head;
+    while (aux != NULL){
+        if(strcmp(symbol,aux->symbol) == 0) return 1;
+        aux = aux->next;
+    }
+    return 0;
+}
+
+// Adiciona símbolo se ele não estiver na tabela
+SymTable * add_symbol(char symbol[], SymTable *head){
+    if(has_symbol(symbol, head) == 0){
+        SymTable *aux = head;
+        SymTable *new;
+        while (aux != NULL && aux->next != NULL) {
+            aux = aux->next;
+        }
+        new = (SymTable *) malloc(sizeof(SymTable));
+        strcpy(new->symbol, symbol);
+        new->mem_addr = -1;
+        new->next= NULL;
+        if (aux != NULL)
+            aux->next = new;
+        else
+            head = new;
+    }
+    return head;
+}
+
+// Adiciona endereço a um símbolo na tabela
+// Se não acha, cria novo símbolo
+SymTable * add_address(char symbol[], int addr, SymTable *head){
+    SymTable *aux = head;
+    SymTable *new;
+    if(has_symbol(symbol, head) == 1){
+        while(aux != NULL){
+            if(strcmp(symbol,aux->symbol) == 0){
+                aux->mem_addr = addr;
+            }
+            aux = aux->next;
+        }
+    }
+    else {
+        new = (SymTable *) malloc(sizeof(SymTable));
+        while (aux != NULL && aux->next != NULL) {
+            aux = aux->next;
+        }
+        strcpy(new->symbol, symbol);
+        new->mem_addr = addr;
+        new->next= NULL;
+        if (aux != NULL)
+            aux->next = new;
+        else
+            head = new;
+    }
+    return head;
+}
+
+void print_table(SymTable *head){
+    SymTable *aux = head;
+    printf("Símbolo \t Endereço\n");
+    while (aux != NULL){
+        printf("%s \t %d\n", aux->symbol, aux->mem_addr);
+        aux = aux->next;
+    }
+}
+
+// FUNÇÕES DO MONTADOR
+// Passo 1 - Constrói tabela.
+SymTable * pass_one(FILE *arq, SymTable *head){
+    char line[100];
+    char *word;
+    int mem_addr = 1;
+    /* 
+    Lê linha por linha e a separa em tokens com "strtok()"
+    Caso encontre um label ou uma palavra não declarada pela MV,
+    adiciona à tabela de símbolos.
+    */
+    while(fgets(line, 100, arq) != NULL){
+        word = strtok(line, " ");
+        if (word != NULL && strncmp(word, ";", 1) != 0 && strncmp(word, "\n", 1) != 0){
+            // Se termina com ":", label encontrado.
+            int size = strlen(word);
+            if (strncmp(&word[size-1], ":", 1) == 0){
+                word[size-1] = '\0';
+                head = add_address(word, mem_addr, head);
+                word = strtok(NULL, " ");
+            }
+            int i = retorna_instrucao(word);
+            //Se leu instrução JUMP, JZ, JN ou CALL
+            if (i == 16 || i == 17 || i == 18 || i == 19){
+                word = strtok(NULL, " ");
+                head = add_symbol(word, head);
+            }
+            // Se leu instrução LOAD ou STORE
+            else if (i == 1 || i == 2){
+                word = strtok(NULL, " ");
+                word = strtok(NULL, " ");
+                head = add_symbol(word, head);
+            }
+            mem_addr++;
+        }
+    }
+
+    return head;
+}

@@ -20,19 +20,11 @@ int main(int argc, char *argv[]) {
         }
     }
     
-
-    //Imprime conteúdo ignorando comentários iniciados com ';'
-    char *buf;
-    while(!feof(arq)){
-        if (fgets(buf, 100, arq)) {
-            char *delimiter = strstr(buf, ";");
-            if (delimiter) {
-                *delimiter = '\0';
-            }
-            printf("%s\n",buf);
-        }
-    }
-
+    // Realiza passo 1 do montador, construindo tabela de símbolos
+    SymTable *head = NULL;
+    head = pass_one(arq, head);
     fclose(arq);
+    print_table(head);
+
     return 0;
 }
