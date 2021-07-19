@@ -27,6 +27,6 @@ void print_table(SymTable *head);
 
 // Passos do montador
 SymTable * pass_one(FILE *arq, SymTable *head);
-
+void pass_two(FILE *arq, SymTable *head);
 
 #endif
