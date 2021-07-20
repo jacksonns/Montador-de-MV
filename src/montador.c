@@ -58,6 +58,7 @@ int retorna_registrador(char str[]) { //Retorna o código dos registradores de p
     return str[1] - '0';
 }
 
+
 // FUNÇÕES CONSTRUTORAS DA TABELA
 // Retorna endereço inteiro de um dado símbolo
 int get_address(char *symbol, SymTable *head){
@@ -143,12 +144,13 @@ void print_table(SymTable *head){
     }
 }
 
+
 // FUNÇÕES DO MONTADOR
 // Passo 1 - Constrói tabela.
 SymTable * pass_one(FILE *arq, SymTable *head){
     char line[100];
     char *word;
-    int mem_addr = 1, size;
+    int mem_addr = 1, size, prog_size = 0;
     /* 
     Lê linha por linha e a separa em tokens com "strtok()"
     Caso encontre um label ou uma palavra não declarada pela MV,
@@ -165,25 +167,44 @@ SymTable * pass_one(FILE *arq, SymTable *head){
                 word = strtok(NULL, " ");
             }
             int i = retorna_instrucao(word);
-            //Se leu instrução JUMP, JZ, JN ou CALL
+            //Se leu instrução JUMP, JZ, JN ou CALL (aumenta prog_size em 2)
             if (i == 16 || i == 17 || i == 18 || i == 19){
                 word = strtok(NULL, " ");
                 size = strlen(word);
                 if(strncmp(&word[size-1], "\n", 1) == 0) word[size-1] = '\0';
                 head = add_symbol(word, head);
+                prog_size += 2;
             }
-            // Se leu instrução LOAD ou STORE
+            // Se leu instrução LOAD ou STORE (aumenta prog_size em 3)
             else if (i == 1 || i == 2){
                 word = strtok(NULL, " ");
                 word = strtok(NULL, " ");
                 size = strlen(word);
                 if(strncmp(&word[size-1], "\n", 1) == 0) word[size-1] = '\0';
                 head = add_symbol(word, head);
+                prog_size += 3;
+            }
+            // READ, WRITE, PUSH, POP, NOT (aumenta prog_size em 2)
+            else if (i == 3 || i == 4 || i == 6 || i == 7 || i == 15){
+                prog_size += 2;
+            }
+            // COPY, ADD, SUB, MUL, DIV, MOD, AND, OR (aumenta prog_size em 3)
+            else if (i == 5 || (i >= 8 && i <= 14)){
+                prog_size += 3;
+            }
+            // HALT, RET ou WORD (aumenta prog_size em 1)
+            else if (i == 0 || i == 20 || i == 21){
+                prog_size ++;
+            }
+            // Se é END, sai do loop
+            else if (i == 22){
+                break;
             }
             mem_addr++;
         }
     }
-
+    printf("MV-EXE\n\n");
+    printf("%d + Implementar 3 inteiros\n\n", prog_size);
     return head;
 }
 
