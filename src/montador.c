@@ -150,7 +150,7 @@ void print_table(SymTable *head){
 SymTable * pass_one(FILE *arq, SymTable *head){
     char line[100];
     char *word;
-    int mem_addr = 1, size, prog_size = 0;
+    int mem_addr = 1, size, prog_size = 0, ap_addr = 999;
     /* 
     Lê linha por linha e a separa em tokens com "strtok()"
     Caso encontre um label ou uma palavra não declarada pela MV,
@@ -174,6 +174,11 @@ SymTable * pass_one(FILE *arq, SymTable *head){
                 if(strncmp(&word[size-1], "\n", 1) == 0) word[size-1] = '\0';
                 head = add_symbol(word, head);
                 prog_size += 2;
+
+                //Atualiza valor inicial da pilha
+                if (i == 19) { //CALL
+                    ap_addr--;
+                }
             }
             // Se leu instrução LOAD ou STORE (aumenta prog_size em 3)
             else if (i == 1 || i == 2){
@@ -187,6 +192,13 @@ SymTable * pass_one(FILE *arq, SymTable *head){
             // READ, WRITE, PUSH, POP, NOT (aumenta prog_size em 2)
             else if (i == 3 || i == 4 || i == 6 || i == 7 || i == 15){
                 prog_size += 2;
+
+                //Atualiza valor inicial da pilha
+                if (i == 6) { //PUSH
+                    ap_addr--;
+                } else if (i == 7) { //POP
+                    ap_addr++;
+                }
             }
             // COPY, ADD, SUB, MUL, DIV, MOD, AND, OR (aumenta prog_size em 3)
             else if (i == 5 || (i >= 8 && i <= 14)){
@@ -195,6 +207,11 @@ SymTable * pass_one(FILE *arq, SymTable *head){
             // HALT, RET ou WORD (aumenta prog_size em 1)
             else if (i == 0 || i == 20 || i == 21){
                 prog_size ++;
+
+                //Atualiza valor inicial da pilha
+                if (i == 20) { //RET
+                    ap_addr++;
+                }
             }
             // Se é END, sai do loop
             else if (i == 22){
@@ -204,7 +221,7 @@ SymTable * pass_one(FILE *arq, SymTable *head){
         }
     }
     printf("MV-EXE\n\n");
-    printf("%d + Implementar 3 inteiros\n\n", prog_size);
+    printf("%d 100 %d 100\n\n", prog_size, ap_addr);
     return head;
 }
 
