@@ -1,0 +1,14 @@
+; Retorna 0 se entrada é par e 1 se é impar
+
+READ R0
+LOAD R1 const2
+LOAD R2 const33 ;Apenas para testar emulador
+MOD R0 R1
+WRITE R0
+
+HALT
+
+const33: WORD 33
+const2: WORD 2
+
+END

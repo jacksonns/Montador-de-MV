@@ -106,8 +106,7 @@ SymTable * add_symbol(char symbol[], SymTable *head){
     return head;
 }
 
-// Adiciona endereço a um símbolo na tabela
-// Se não acha, cria novo símbolo
+// Adiciona endereço a um símbolo na tabela. Se não acha, cria novo símbolo
 SymTable * add_address(char symbol[], int addr, SymTable *head){
     SymTable *aux = head;
     SymTable *new;
@@ -150,7 +149,7 @@ void print_table(SymTable *head){
 SymTable * pass_one(FILE *arq, SymTable *head){
     char line[100];
     char *word;
-    int mem_addr = 1, size, prog_size = 0, ap_addr = 999;
+    int size, prog_size = 0, ap_addr = 999;
     /* 
     Lê linha por linha e a separa em tokens com "strtok()"
     Caso encontre um label ou uma palavra não declarada pela MV,
@@ -163,17 +162,18 @@ SymTable * pass_one(FILE *arq, SymTable *head){
             size = strlen(word);
             if (strncmp(&word[size-1], ":", 1) == 0){
                 word[size-1] = '\0';
-                head = add_address(word, mem_addr, head);
+                head = add_address(word, prog_size, head);
                 word = strtok(NULL, " ");
             }
+            if(strncmp(&word[size-1], "\n", 1) == 0) word[size-1] = '\0';
             int i = retorna_instrucao(word);
             //Se leu instrução JUMP, JZ, JN ou CALL (aumenta prog_size em 2)
             if (i == 16 || i == 17 || i == 18 || i == 19){
                 word = strtok(NULL, " ");
                 size = strlen(word);
                 if(strncmp(&word[size-1], "\n", 1) == 0) word[size-1] = '\0';
-                head = add_symbol(word, head);
                 prog_size += 2;
+                head = add_symbol(word, head);
 
                 //Atualiza valor inicial da pilha
                 if (i == 19) { //CALL
@@ -186,8 +186,8 @@ SymTable * pass_one(FILE *arq, SymTable *head){
                 word = strtok(NULL, " ");
                 size = strlen(word);
                 if(strncmp(&word[size-1], "\n", 1) == 0) word[size-1] = '\0';
-                head = add_symbol(word, head);
                 prog_size += 3;
+                head = add_symbol(word, head);
             }
             // READ, WRITE, PUSH, POP, NOT (aumenta prog_size em 2)
             else if (i == 3 || i == 4 || i == 6 || i == 7 || i == 15){
@@ -217,7 +217,6 @@ SymTable * pass_one(FILE *arq, SymTable *head){
             else if (i == 22){
                 break;
             }
-            mem_addr++;
         }
     }
     printf("MV-EXE\n\n");
@@ -229,7 +228,7 @@ SymTable * pass_one(FILE *arq, SymTable *head){
 void pass_two(FILE *arq, SymTable *head) {
     char line[100];
     char *word;
-    int size, address_or_code;
+    int size, address_or_code, mem_addr = 0;
 
     while(fgets(line, 100, arq) != NULL) {
         line[strcspn(line, "\n")] = 0;
@@ -248,28 +247,36 @@ void pass_two(FILE *arq, SymTable *head) {
                         if ((address_or_code >= 1) && (address_or_code <= 15)) { //Instruções com pelo menos um registrador
                             printf("%d ", address_or_code);
                             word = strtok(NULL, " "); //Próxima palavra
+                            mem_addr += 2;
                             printf("%d ", retorna_registrador(word));
 
                             if ((address_or_code == 5) || ((address_or_code >= 8) && (address_or_code <= 14))) { //Intruções com dois registradores
                                 word = strtok(NULL, " "); //Próxima palavra
+                                mem_addr++;
                                 printf("%d ", retorna_registrador(word));
                             } else if ((address_or_code == 1) || (address_or_code == 2)) { //Instruções com resgistrador e memória
                                 word = strtok(NULL, " "); //Próxima palavra
-                                printf("%d ", get_address(word, head));
+                                mem_addr++;
+                                printf("%d ", get_address(word, head) - mem_addr);
                             }
 
                         } else if ((address_or_code >= 16) && (address_or_code <= 19)) { //Instruções só com memória
                             printf("%d ", address_or_code);
                             word = strtok(NULL, " "); //Próxima palavra
-                            printf("%d ", get_address(word, head));
+                            mem_addr += 2;
+                            printf("%d ", get_address(word, head) - mem_addr);
 
                         } else if (address_or_code == 21) { //Word
                             word = strtok(NULL, " "); //Próxima palavra
                             printf("%s ", word);
+                            mem_addr++;
                             
                         } else if ((address_or_code == 22) || (address_or_code == -1)){ //End ou inválido
                             printf("\b"); //Apaga espaço extra
                             return;
+                        } else if (address_or_code == 0 || address_or_code == 20){ // HALT ou RET
+                            printf("%d ", address_or_code);
+                            mem_addr++;
                         }
                     }
                 }
