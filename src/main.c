@@ -25,8 +25,6 @@ int main(int argc, char *argv[]) {
 
     // Realiza passo 2, traduzindo o código recebido
     arq = fopen(argv[1], "rt");
-    //printf("MV-EXE\n\n");
-    //printf("Implementar 4 inteiros\n\n");
     pass_two(arq,head);
     fclose(arq);
 
