@@ -214,7 +214,7 @@ void pass_two(FILE *arq, SymTable *head) {
     int size, address_or_code, mem_addr = 0;
 
     while(fgets(line, 100, arq) != NULL) {
-        line[strcspn(line, "\n")] = 0;
+        line[strcspn(line, "\r\n")] = 0;
         word = strtok(line, " ");
         while (word != NULL){
             if (strncmp(word, ";", 1) == 0) { //Se começo de comentário
