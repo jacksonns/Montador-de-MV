@@ -156,6 +156,7 @@ SymTable * pass_one(FILE *arq, SymTable *head){
     adiciona à tabela de símbolos.
     */
     while(fgets(line, 100, arq) != NULL){
+        line[strcspn(line, "\r\n")] = 0;
         word = strtok(line, " ");
         if (word != NULL && strncmp(word, ";", 1) != 0 && strncmp(word, "\n", 1) != 0){
             // Se termina com ":", label encontrado.
@@ -165,13 +166,11 @@ SymTable * pass_one(FILE *arq, SymTable *head){
                 head = add_address(word, prog_size, head);
                 word = strtok(NULL, " ");
             }
-            if(strncmp(&word[size-1], "\n", 1) == 0) word[size-1] = '\0';
             int i = retorna_instrucao(word);
             //Se leu instrução JUMP, JZ, JN ou CALL (aumenta prog_size em 2)
             if (i == 16 || i == 17 || i == 18 || i == 19){
                 word = strtok(NULL, " ");
-                size = strlen(word);
-                if(strncmp(&word[size-1], "\n", 1) == 0) word[size-1] = '\0';
+                //size = strlen(word);
                 prog_size += 2;
                 head = add_symbol(word, head);
             }
@@ -179,8 +178,7 @@ SymTable * pass_one(FILE *arq, SymTable *head){
             else if (i == 1 || i == 2){
                 word = strtok(NULL, " ");
                 word = strtok(NULL, " ");
-                size = strlen(word);
-                if(strncmp(&word[size-1], "\n", 1) == 0) word[size-1] = '\0';
+                //size = strlen(word);
                 prog_size += 3;
                 head = add_symbol(word, head);
             }
@@ -202,6 +200,7 @@ SymTable * pass_one(FILE *arq, SymTable *head){
             }
         }
     }
+    //print_table(head);
     printf("MV-EXE\n\n");
     printf("%d 1000 999 1000\n\n", prog_size);
     return head;
