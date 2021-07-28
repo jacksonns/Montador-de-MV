@@ -96,7 +96,7 @@ n1_maior_n5: STORE R1 m2 ;sobe n1 na fila
 STORE R0 m1 ;n5 menor de todos
 
 ;;;;;;;; Output da mediana ;;;;;;;;;;;
-fim: LOAD R0 m2 ;Do meio é mediana
+fim: LOAD R0 m3 ;Do meio é mediana
 WRITE R0
 HALT
 
