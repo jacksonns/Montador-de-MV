@@ -170,7 +170,6 @@ SymTable * pass_one(FILE *arq, SymTable *head){
             //Se leu instrução JUMP, JZ, JN ou CALL (aumenta prog_size em 2)
             if (i == 16 || i == 17 || i == 18 || i == 19){
                 word = strtok(NULL, " ");
-                //size = strlen(word);
                 prog_size += 2;
                 head = add_symbol(word, head);
             }
@@ -178,7 +177,6 @@ SymTable * pass_one(FILE *arq, SymTable *head){
             else if (i == 1 || i == 2){
                 word = strtok(NULL, " ");
                 word = strtok(NULL, " ");
-                //size = strlen(word);
                 prog_size += 3;
                 head = add_symbol(word, head);
             }
@@ -200,7 +198,6 @@ SymTable * pass_one(FILE *arq, SymTable *head){
             }
         }
     }
-    //print_table(head);
     printf("MV-EXE\n\n");
     printf("%d 1000 999 1000\n\n", prog_size);
     return head;
