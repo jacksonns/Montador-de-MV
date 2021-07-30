@@ -149,7 +149,7 @@ void print_table(SymTable *head){
 SymTable * pass_one(FILE *arq, SymTable *head){
     char line[100];
     char *word;
-    int size, prog_size = 0;
+    int size, prog_size = 0, num_inst = 0, num_word = 0;
     /* 
     Lê linha por linha e a separa em tokens com "strtok()"
     Caso encontre um label ou uma palavra não declarada pela MV,
@@ -166,6 +166,7 @@ SymTable * pass_one(FILE *arq, SymTable *head){
                 head = add_address(word, prog_size, head);
                 word = strtok(NULL, " ");
             }
+            num_inst++;
             int i = retorna_instrucao(word);
             //Se leu instrução JUMP, JZ, JN ou CALL (aumenta prog_size em 2)
             if (i == 16 || i == 17 || i == 18 || i == 19){
@@ -191,6 +192,10 @@ SymTable * pass_one(FILE *arq, SymTable *head){
             // HALT, RET ou WORD (aumenta prog_size em 1)
             else if (i == 0 || i == 20 || i == 21){
                 prog_size ++;
+                if (i == 21 && num_inst == 1){
+                    num_word++;
+                    num_inst = 0;
+                }
             }
             // Se é END, sai do loop
             else if (i == 22){
@@ -199,7 +204,7 @@ SymTable * pass_one(FILE *arq, SymTable *head){
         }
     }
     printf("MV-EXE\n\n");
-    printf("%d 1000 999 1000\n\n", prog_size);
+    printf("%d 1000 999 %d\n\n", prog_size, 1000+num_word);
     return head;
 }
 
